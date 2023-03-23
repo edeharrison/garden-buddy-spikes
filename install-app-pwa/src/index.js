@@ -5,16 +5,10 @@ import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (event) => {
-  deferredPrompt = event
-})
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App deferredPrompt={deferredPrompt}/>
+    <App />
   </React.StrictMode>
 );
 

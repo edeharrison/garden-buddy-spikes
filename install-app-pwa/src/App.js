@@ -15,20 +15,23 @@
 // React-specific setup of PWAs: https://create-react-app.dev/docs/making-a-progressive-web-app/
 // Workbox docs: https://developer.chrome.com/docs/workbox/
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-function App({deferredPrompt}) {
-  async function handleInstall() {
-    if (deferredPrompt !== null) {
-      deferredPrompt.prompt()
-      const {outcome} = await deferredPrompt.userChoice
-      if (outcome === 'accepted') {
-        deferredPrompt = null
-      }
-    }
+function App() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      setDeferredPrompt(e)
+    })
+  }, [])
+
+  const handleInstall = (e) => {
+    deferredPrompt.prompt()
   }
+
 
   return (
     <div className="App">
