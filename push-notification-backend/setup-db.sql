@@ -8,5 +8,6 @@ DROP TABLE IF EXISTS subscriptions;
 CREATE TABLE subscriptions (
   id SERIAL,
   endpoint TEXT,
-  subscription JSON
+  subscription JSON,
+  time TIMESTAMP
 );

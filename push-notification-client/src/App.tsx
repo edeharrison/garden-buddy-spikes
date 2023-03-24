@@ -4,6 +4,8 @@ import './App.css';
 
 function App() {
 
+
+
   const handleSubscribe = () => {
     return Notification.requestPermission()
       .then(result => {
@@ -80,6 +82,8 @@ function App() {
         })
       })
   }
+
+  
 
   return (
     <div className="App">

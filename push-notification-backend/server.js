@@ -13,6 +13,17 @@ const vapidDetails = {
   subject: VAPID_SUBJECT
 }
 
+const notificationInterval = setInterval(() => {
+  db.query(`
+  DELETE FROM subscriptions
+  WHERE time < CURRENT_TIMESTAMP()
+  RETURN subscription
+  `).then((subscriptions) => {
+    subscriptions.forEach(({subscription}) =>  webpush.sendNotification(subscription.subscription, notification, options))
+    
+  })
+}, 30 * 1000)
+
 app.use(cors())
 app.use(express.json())
 
@@ -21,10 +32,10 @@ app.post('/add-subscription', (req, res) => {
 
   db.query(`
   INSERT INTO subscriptions
-  (endpoint, subscription)
+  (endpoint, subscription, time)
   VALUES
-  ($1, $2)
-  `, [body.endpoint, body])
+  ($1, $2, $3)
+  `, [body.endpoint, body, new Date(Date.now() + 3 * 60 * 1000) ])
   .then(() => {
     console.log(`subscription for endpoint ${body.endpoint} saved`)
     res.sendStatus(200)
@@ -52,8 +63,10 @@ app.post('/give-me-notification', (req, res) => {
       TTL: 10000,
       vapidDetails
     }
+  
+   webpush.sendNotification(subscription.subscription, notification, options)
+    res.sendStatus(200)
 
-    webpush.sendNotification(subscription.subscription, notification, options)
   })
 })
 
