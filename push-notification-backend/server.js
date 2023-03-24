@@ -5,7 +5,6 @@ const app = express();
 
 const db = require('./db')
 
-
 const {PUBLIC_VAPID_KEY, PRIVATE_VAPID_KEY, VAPID_SUBJECT} = process.env;
 const vapidDetails = {
   publicKey: PUBLIC_VAPID_KEY,
@@ -13,14 +12,26 @@ const vapidDetails = {
   subject: VAPID_SUBJECT
 }
 
+const notification = JSON.stringify({
+  title: "WE MADE IT",
+  options: {
+    body: "WE MADE IT!!!"
+  }
+})
+
+const options = {
+  TTL: 10000,
+  vapidDetails
+}
+
+
 const notificationInterval = setInterval(() => {
   db.query(`
   DELETE FROM subscriptions
-  WHERE time < CURRENT_TIMESTAMP()
-  RETURN subscription
-  `).then((subscriptions) => {
-    subscriptions.forEach(({subscription}) =>  webpush.sendNotification(subscription.subscription, notification, options))
-    
+  WHERE time < CURRENT_TIMESTAMP
+  RETURNING subscription
+  `).then(({rows: subscriptions}) => {
+    subscriptions.forEach(({subscription}) =>  webpush.sendNotification(subscription, notification, options))
   })
 }, 30 * 1000)
 
@@ -35,7 +46,7 @@ app.post('/add-subscription', (req, res) => {
   (endpoint, subscription, time)
   VALUES
   ($1, $2, $3)
-  `, [body.endpoint, body, new Date(Date.now() + 3 * 60 * 1000) ])
+  `, [body.endpoint, body, new Date(Date.now() + 1 * 60 * 1000) ])
   .then(() => {
     console.log(`subscription for endpoint ${body.endpoint} saved`)
     res.sendStatus(200)
@@ -52,17 +63,6 @@ app.post('/give-me-notification', (req, res) => {
   `, [body.endpoint])
   .then(result => result.rows[0])
   .then(subscription => {
-    const notification = JSON.stringify({
-      title: "WE MADE IT",
-      options: {
-        body: "WE MADE IT!!!"
-      }
-    })
-
-    const options = {
-      TTL: 10000,
-      vapidDetails
-    }
   
    webpush.sendNotification(subscription.subscription, notification, options)
     res.sendStatus(200)
