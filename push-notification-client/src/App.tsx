@@ -4,8 +4,6 @@ import './App.css';
 
 function App() {
 
-
-
   const handleSubscribe = () => {
     return Notification.requestPermission()
       .then(result => {
@@ -73,13 +71,20 @@ function App() {
         return registration.pushManager.getSubscription()
       })
       .then(subscription => {
-        fetch('http://localhost:9000/give-me-notification', {
-          method: 'POST',
-          headers: {
-            "Content-type": "application/json"
-          },
-          body: JSON.stringify(subscription)
+        const intervalID = setInterval(() => {
+          if (navigator.onLine) {
+            clearInterval(intervalID)
+            fetch('http://localhost:9000/give-me-notification', {
+              method: 'POST',
+              headers: {
+                "Content-type": "application/json"
+              },
+            body: JSON.stringify(subscription)
         })
+          }
+
+        }, 1000)
+        
       })
   }
 
